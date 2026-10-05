@@ -1,1 +1,1 @@
-# dlomax21.github.io
+# dlomax21.github.io/content
