@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1b39">
+  <meta name="color-scheme" content="light">
+  <title>Home Office – Liquid Glass Experience</title>
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Arial, sans-serif;
+      font-synthesis: none;
+      color: #1b2d48; background: #e9eef6; --primary: #1478e9; --primary-dark: #0962c9;
+      --line: #e8edf5; --today: #1478e9; --ease: cubic-bezier(.22,1,.36,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body { margin: 0; min-height: 100vh; overflow-x: hidden; position: relative;
+      background: linear-gradient(142deg,#edf3fb 0%,#f8faff 34%,#e5edf7 70%,#e1eaf7 100%); }
+    .atmosphere { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .ambient { position: absolute; border-radius: 50%; will-change: transform; filter: blur(60px); opacity: .56; }
+    .ambient.one { width: 62vw; height: 62vw; max-height: 790px; top: -35vw; right: -15vw;
+      background: radial-gradient(circle,rgba(109,172,249,.47),rgba(168,208,255,.12) 60%,transparent 73%); animation: drift1 22s ease-in-out infinite alternate; }
+    .ambient.two { width: 56vw; height: 56vw; max-height: 720px; bottom: -35vw; left: -20vw;
+      background: radial-gradient(circle,rgba(172,193,241,.46),rgba(225,235,252,.06) 65%,transparent 75%); animation: drift2 25s ease-in-out infinite alternate; }
+    .ambient.three { width: 440px; height: 440px; top: 45%; left: 47%; opacity:.34;
+      background: radial-gradient(circle,rgba(255,255,255,.94),rgba(173,209,250,.16) 65%,transparent 75%); animation: drift3 30s ease-in-out infinite alternate; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, .table-scroll:focus-visible, #scheduleBody tr[data-date]:focus-visible > td { outline: 3px solid #74aaf5; outline-offset: -2px; }
+    .page { position: relative; z-index: 1; max-width: 1580px; padding: 26px 26px 44px; margin: auto; animation: entrance .82s var(--ease) both; }
+    .hero { --spot-x: 76%; --spot-y: 24%; position: relative; overflow: hidden; isolation: isolate;
+      min-height: 195px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      padding: 34px 38px; border-radius: 35px; border: 1px solid rgba(255,255,255,.5);
+      background: radial-gradient(ellipse at 83% 5%,rgba(54,129,226,.77),transparent 37%),
+        radial-gradient(ellipse at 45% 135%,rgba(21,105,216,.55),transparent 43%),
+        linear-gradient(117deg,#0c1b39 5%,#142d53 54%,#123967 100%);
+      box-shadow: 0 32px 64px rgba(25,57,103,.19),inset 0 1px 0 rgba(255,255,255,.28),0 3px 9px rgba(8,36,73,.09);
+      -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+    .hero::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+      background: radial-gradient(circle 270px at var(--spot-x) var(--spot-y),rgba(255,255,255,.14),transparent 95%),
+       linear-gradient(150deg,rgba(255,255,255,.19),transparent 29%,transparent 69%,rgba(255,255,255,.055)); }
+    .hero::after { content:""; position:absolute; top:-120%; width:27%; height:320%; left:-50%; z-index:0;
+      transform:rotate(18deg); pointer-events:none; opacity:.5;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); animation: heroShimmer 13s ease-in-out 1s infinite; }
+    .hero-ring { position:absolute; pointer-events:none; width:460px; height:460px; right:17%; top:-230px; border-radius:50%;
+      border:1px solid rgba(225,242,255,.13); box-shadow:0 0 0 33px rgba(255,255,255,.015),0 0 0 75px rgba(255,255,255,.017),inset 0 0 40px rgba(163,209,255,.12); transform:rotate(-17deg); }
+    .hero-ring::after { content:""; position:absolute; inset:27px; border:1px solid rgba(217,235,255,.10); border-radius:50%; }
+    .hero-stars { position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.7;
+      background-image:radial-gradient(circle at 12% 20%,white 0 1px,transparent 1.6px),radial-gradient(circle at 71% 37%,white 0 1px,transparent 1.6px),radial-gradient(circle at 86% 72%,white 0 1px,transparent 1.6px),radial-gradient(circle at 47% 26%,white 0 1px,transparent 1.6px); animation: starPulse 8s ease-in-out infinite alternate; }
+    .brand,.today-label { position:relative; z-index:1; }
+    .brand { display:flex; align-items:center; gap:20px; min-width:0; }
+    .brand-icon { flex:0 0 68px; width:68px; height:68px; display:grid; place-items:center; position:relative; isolation:isolate; overflow:hidden;
+      color:white; border-radius:23px; border:1px solid rgba(255,255,255,.64);
+      background:linear-gradient(150deg,rgba(227,245,255,.91),rgba(78,170,255,.72) 31%,rgba(20,113,219,.84) 65%,rgba(18,64,132,.9));
+      box-shadow:inset 0 2px 3px rgba(255,255,255,.65),inset 0 -6px 14px rgba(9,58,135,.21),0 14px 25px rgba(3,25,62,.28); animation:iconFloat 6s ease-in-out infinite; }
+    .brand-icon::before { content:""; position:absolute; left:8%; right:8%; top:4%; height:43%; border-radius:100% 100% 60% 60%;background:linear-gradient(rgba(255,255,255,.53),rgba(255,255,255,0)); }
+    .brand-icon svg { width:35px; height:35px; position:relative; filter:drop-shadow(0 2px 2px rgba(0,53,120,.24)); }
+    .eyebrow { font-size:10.5px; font-weight:800; letter-spacing:2.8px; color:#9bbfe9; }
+    h1 { margin:6px 0 5px; font-size:clamp(34px,3.6vw,52px); font-weight:760; letter-spacing:-2px; line-height:1; color:#fff; text-shadow:0 4px 25px rgba(0,0,0,.13); }
+    .hero-subtitle { margin:10px 0 0; color:#c4d7f0; font-size:12px; letter-spacing:.2px; }
+    .today-label { display:flex; align-items:center; gap:16px; min-width:280px;
+      border:1px solid rgba(255,255,255,.35); border-radius:24px; padding:14px 15px 14px 19px;
+      color:#fff; background:linear-gradient(132deg,rgba(255,255,255,.20),rgba(255,255,255,.08));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 15px 35px rgba(0,19,55,.13);
+      -webkit-backdrop-filter:blur(22px) saturate(1.3);backdrop-filter:blur(22px) saturate(1.3);
+      transition:transform .36s var(--ease),background .36s var(--ease),box-shadow .36s var(--ease); }
+    .today-label:hover { transform:translateY(-4px); background:rgba(255,255,255,.20); box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 19px 34px rgba(0,19,55,.19); }
+    .today-signal { display:grid; place-items:center; width:28px;height:28px;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(255,255,255,.16); }
+    .today-dot { width:8px;height:8px;border-radius:50%; background:#58adff;box-shadow:0 0 0 0 rgba(88,173,255,.35);animation:beacon 3s ease-out infinite; }
+    .today-copy { display:flex;flex-direction:column;gap:6px;flex:1;white-space:nowrap; }
+    .today-kicker { color:#a9c7eb;letter-spacing:1.3px;font-size:9px;font-weight:850; }
+    #todayLabel { font-weight:680; font-size:12px;color:#f6faff; }
+    #todayNumber { display:grid;place-items:center;width:46px;height:46px;flex:0 0 46px;border-radius:16px;border:1px solid rgba(255,255,255,.35);
+      background:linear-gradient(135deg,rgba(255,255,255,.30),rgba(255,255,255,.07));font-size:23px;letter-spacing:-.8px;font-weight:780;box-shadow:inset 0 1px 0 rgba(255,255,255,.35); }
+    .toolbar { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin:23px 0 16px; }
+    .nav,.actions { display:flex;align-items:center;gap:7px;position:relative; }
+    .nav { padding:7px; border:1px solid rgba(255,255,255,.94);border-radius:22px;
+      background:linear-gradient(145deg,rgba(255,255,255,.86),rgba(250,252,255,.62));
+      box-shadow:inset 0 1px 0 #fff,0 12px 30px rgba(49,80,123,.10);
+      -webkit-backdrop-filter:blur(20px) saturate(1.2);backdrop-filter:blur(20px) saturate(1.2); }
+    .nav h2 { margin:0 14px; min-width:175px;text-align:center;color:#223e62;letter-spacing:-.6px;font-size:20px;font-weight:790; }
+    .btn { position:relative;overflow:hidden;isolation:isolate; min-height:43px;padding:10px 17px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.9);background:linear-gradient(180deg,#fff,#f5f9ff);color:#375777;font-weight:730;font-size:12.5px;
+      box-shadow:inset 0 1px 0 #fff,0 4px 11px rgba(34,61,95,.06);
+      transition:transform .32s var(--ease),box-shadow .32s var(--ease),background .32s ease,border-color .32s ease; }
+    .btn::before { content:""; position:absolute;left:-65%;top:0;width:45%;height:100%;transform:skew(-20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transition:left .6s var(--ease);pointer-events:none; }
+    .btn:hover:not(:disabled)::before { left:125%; }
+    .btn:hover:not(:disabled) { transform:translateY(-3px) scale(1.025);box-shadow:inset 0 1px 0 #fff,0 12px 23px rgba(28,74,127,.12);border-color:#fff; }
+    .btn:active:not(:disabled){transform:translateY(0) scale(.975);}
+    .btn:disabled { opacity:.32;cursor:not-allowed;box-shadow:none; }
+    .btn-icon { width:43px;padding:7px;font-size:24px;font-weight:400;line-height:1; }
+    .btn-primary { color:#fff;border-color:rgba(255,255,255,.50);background:linear-gradient(175deg,#66b3ff 0%,#2089ed 43%,#0968d4 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.50),0 8px 20px rgba(20,120,233,.22); }
+    .btn-primary:hover:not(:disabled){box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 14px 24px rgba(20,120,233,.29);}
+    .actions .btn { min-height:56px;border-radius:19px;padding-inline:19px; }
+    .actions .btn.subtle { background:rgba(255,255,255,.65);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px); }
+    .month-meta { font-size:11px;font-weight:630;letter-spacing:.2px;color:#758aa5; margin-left:auto;padding:10px 14px;border:1px solid rgba(255,255,255,.85);
+      border-radius:999px;background:rgba(255,255,255,.52);box-shadow:inset 0 1px 0 white;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); }
+    .panel { position:relative;overflow:hidden;isolation:isolate;
+      border-radius:31px;border:1px solid rgba(255,255,255,.98);background:rgba(255,255,255,.81);
+      box-shadow:0 25px 55px rgba(28,60,103,.13),0 6px 14px rgba(28,60,103,.05),inset 0 1px 0 #fff;
+      -webkit-backdrop-filter:blur(24px) saturate(1.3);backdrop-filter:blur(24px) saturate(1.3); animation:panelEnter 1s .12s var(--ease) both; }
+    .panel::before { content:"";position:absolute;z-index:0;inset:0;pointer-events:none;border-radius:inherit;
+      background:linear-gradient(125deg,rgba(255,255,255,.74) 0%,rgba(255,255,255,.07) 31%,transparent 65%,rgba(204,223,252,.12)); }
+    .panel-heading { position:relative;z-index:1;padding:20px 21px 19px;background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(243,248,255,.65));border-bottom:1px solid #e8eef6; }
+    .panel-titleline {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px;margin:0 0 14px 2px;}
+    .panel-title {color:#375575;font-size:11px;font-weight:850;letter-spacing:1.55px;}
+    .panel-live {font-size:10px;color:#6385a9;display:flex;align-items:center;gap:7px;font-weight:700;letter-spacing:.25px;}
+    .panel-live::before{content:"";width:6px;height:6px;border-radius:50%;background:#2188f0;box-shadow:0 0 0 4px rgba(33,136,240,.12);}
+    .group-summary {display:grid;grid-template-columns:1fr 1.11fr .59fr;gap:10px;font-size:11.5px;line-height:1.48;color:#62758d;}
+    .group-summary > span {min-width:0;position:relative;overflow:hidden;padding:12px 15px 13px;border:1px solid #e6edf5;border-radius:17px;background:linear-gradient(145deg,rgba(255,255,255,.99),rgba(246,250,255,.80));
+      box-shadow:inset 0 1px 0 #fff,0 5px 15px rgba(36,67,103,.05);transition:transform .36s var(--ease),box-shadow .36s var(--ease),border-color .36s ease;}
+    .group-summary > span::after{content:"";position:absolute;right:-15px;bottom:-34px;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,rgba(65,147,236,.12),transparent 72%);pointer-events:none;}
+    .group-summary > span:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 #fff,0 12px 24px rgba(36,67,103,.10);border-color:#c5dcf7;}
+    .group-summary strong {display:block;color:#2d659f;font-weight:850;margin-bottom:4px;font-size:11px;letter-spacing:.2px;}
+    .group-summary > span:last-child strong {color:#637a90;}
+    .table-scroll { position:relative;z-index:1;overflow:auto;max-height:min(73vh,920px);scrollbar-gutter:stable;background:linear-gradient(180deg,#fff,#fcfdff);scroll-behavior:smooth; }
+    .table-scroll::-webkit-scrollbar{width:12px;height:12px;}.table-scroll::-webkit-scrollbar-track{background:#eef3f9;border-radius:999px;}
+    .table-scroll::-webkit-scrollbar-thumb{border:3px solid #eef3f9;border-radius:999px;background:linear-gradient(#afc3dc,#9eb9da);}
+    .table-scroll::-webkit-scrollbar-thumb:hover{background:#739fcf;}
+    table { width:100%;min-width:1250px;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12.5px; }
+    thead th {position:sticky;top:0;z-index:3;height:50px;padding:8px 3px;text-align:center;font-weight:820;font-size:12px;white-space:nowrap;
+      color:#25425f;border-right:1px solid rgba(255,255,255,.63);border-bottom:2px solid #dbe6f1;box-shadow:inset 0 2px 0 rgba(255,255,255,.70);}
+    th.date-head{width:121px;background:linear-gradient(#fefeff,#eaf2fb);text-align:left;padding-left:13px;position:sticky;left:0;top:0;z-index:5;}
+    th.person-head{background:linear-gradient(180deg,rgba(255,255,255,.5),transparent 85%),color-mix(in srgb,var(--person-color) 78%,white 22%);}
+    tbody td {height:34px;padding:0;position:relative;border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:#fff;
+      transition:box-shadow .20s ease,background-color .20s ease,border-color .20s ease;}
+    td.date-cell{position:sticky;left:0;z-index:2;width:121px;padding:4px 8px 4px 12px;white-space:nowrap;font-size:11.5px;font-weight:750;color:#536b87;background:#f6faff;}
+    td.date-cell .weekday{margin-left:6px;color:#96a9be;font-size:10px;font-weight:510;}
+    tr.is-weekend td.date-cell{color:#c36f75;background:#fff7f8;} tr.is-weekend td:not(.date-cell){background:#f5f8fc;}
+    td.has-ho,tr.is-weekend td.has-ho{background:color-mix(in srgb,var(--person-color) 84%,white 16%);box-shadow:inset 0 1px 0 rgba(255,255,255,.50);}
+    .shift-label{display:block;width:100%;padding:7px 2px;text-align:center;font-size:10.6px;color:#243953;font-weight:400;letter-spacing:.12px;line-height:1.2;white-space:nowrap;user-select:text;}
+    tr.is-holiday > td.holiday-cell{height:43px;background:linear-gradient(175deg,#fffaf0,#fff0d9);border-left:4px solid #e2b26c;border-bottom:1px solid #f0dfc8;border-right:1px solid #f0dfc8;color:#895a29;}
+    .holiday-inner{display:flex;align-items:center;min-height:40px;width:100%;}
+    .holiday-date{flex:0 0 117px;padding-left:7px;color:#94622f;font-size:11.5px;font-weight:800;white-space:nowrap;}
+    .holiday-date .weekday{margin-left:5px;font-size:10px;font-weight:500;color:#b08b61;}
+    .holiday-content{flex:1;display:flex;justify-content:center;align-items:center;gap:11px;min-width:0;padding-right:117px;}
+    .holiday-tag{display:inline-block;white-space:nowrap;padding:4px 10px;border-radius:999px;border:1px solid #f3d5a6;background:#fffaf1;color:#ae7b37;font-size:10px;font-weight:850;letter-spacing:.55px;}
+    .holiday-name{font-size:12px;font-weight:800;text-align:center;}
+    tr.is-today > td{border-top:2px solid var(--today);border-bottom:2px solid var(--today);}
+    tr.is-today > td:not(.has-ho):not(.date-cell){background:#eaf4ff;}
+    tr.is-today > td.has-ho{box-shadow:inset 0 0 0 2px #b4d9ff,inset 0 0 0 999px rgba(20,120,233,.055);}
+    tr.is-today > td:first-child{border-left:5px solid var(--today);}tr.is-today > td:last-child{border-right:5px solid var(--today);}
+    tr.is-today td.date-cell{background:linear-gradient(180deg,#e3f2ff,#c2e1ff)!important;color:#0756ad;font-weight:900;padding-left:7px;z-index:2;box-shadow:0 0 17px rgba(20,120,233,.15);}
+    tr.is-today.is-holiday > td.holiday-cell{background:linear-gradient(180deg,#eaf5ff,#d4eaff);color:#0756ad;border-left:5px solid var(--today);}
+    tr.is-today.is-holiday .holiday-date,tr.is-today.is-holiday .holiday-name{color:#0756ad;}
+    .today-small{display:inline-block;margin-top:3px;padding:2px 7px;border-radius:999px;background:linear-gradient(180deg,#4aa0f7,#1478e9);color:white;font-size:9.5px;font-weight:830;letter-spacing:.4px;box-shadow:0 3px 8px rgba(20,120,233,.17);}
+    @media screen {
+      #scheduleBody tr[data-date]{cursor:pointer;}
+      #scheduleBody tr[data-date]:hover:not(.is-today):not(.is-selected)>td{box-shadow:inset 0 0 0 999px rgba(25,92,164,.075),inset 0 2px 0 rgba(20,120,233,.13),inset 0 -2px 0 rgba(20,120,233,.13);}
+      #scheduleBody tr.is-selected:not(.is-today)>td{box-shadow:inset 0 2px 0 #397ed0,inset 0 -2px 0 #397ed0,inset 0 0 0 999px rgba(48,126,218,.14);}
+      #scheduleBody tr.is-selected:not(.is-today)>td:first-child{box-shadow:inset 5px 0 0 #397ed0,inset 0 2px 0 #397ed0,inset 0 -2px 0 #397ed0,inset 0 0 0 999px rgba(48,126,218,.14);}
+      #scheduleBody tr.is-selected:not(.is-today)>td:last-child{border-right:3px solid #397ed0;}
+      #scheduleBody tr.is-selected:not(.is-today) td.date-cell{color:#175e9f;background:#e1f0ff;font-weight:860;}
+      #scheduleBody tr.is-selected.is-holiday:not(.is-today)>td.holiday-cell{background:#e3f0ff;color:#235682;}
+      #scheduleBody tr.is-selected.is-holiday:not(.is-today) .holiday-date,#scheduleBody tr.is-selected.is-holiday:not(.is-today) .holiday-name{color:#235682;}
+      #scheduleBody tr.is-selected.is-today>td{box-shadow:inset 0 0 0 999px rgba(20,120,233,.12),inset 0 2px 0 #0962c9,inset 0 -2px 0 #0962c9;}
+      #scheduleBody tr.is-selected.is-today td.date-cell,#scheduleBody tr.is-selected.is-today.is-holiday>td.holiday-cell{background:#b6daff!important;}
+    }
+    .table-animating tbody{animation:tableFade .43s var(--ease);}
+    .print-month{display:none;}
+    .selection-toast {position:fixed;bottom:24px;right:25px;z-index:20;display:flex;align-items:center;gap:13px;
+      border:1px solid rgba(255,255,255,.85);border-radius:21px;padding:12px 20px 12px 13px;
+      background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(235,246,255,.83));
+      box-shadow:0 14px 40px rgba(23,67,128,.17),inset 0 1px 0 white;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+      opacity:0;transform:translateY(18px) scale(.94);pointer-events:none;transition:opacity .36s var(--ease),transform .36s var(--ease);}
+    .selection-toast.is-visible{opacity:1;transform:translateY(0) scale(1);}
+    .selection-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(160deg,#7cbeff,#1478e9);color:white;font-size:18px;box-shadow:0 5px 11px rgba(20,120,233,.2);}
+    .selection-heading{font-size:12px;font-weight:790;color:#24496e;}.selection-detail{font-size:10.5px;margin-top:4px;color:#6b89a6;}
+    @media(max-width:1100px){.group-summary{grid-template-columns:1fr 1fr;}.group-summary>span:last-child{grid-column:1/-1;}.month-meta{display:none;}}
+    @media(max-width:760px){.page{padding:11px 9px 24px}.hero{padding:21px 19px;min-height:auto;border-radius:25px;flex-wrap:wrap}.hero-ring{opacity:.4;right:-180px}.brand{gap:13px}.brand-icon{width:51px;height:51px;flex-basis:51px;border-radius:17px}.brand-icon svg{width:28px;height:28px}h1{font-size:32px;letter-spacing:-1.3px}.today-label{min-width:0;width:100%;padding:10px 12px;border-radius:17px}.today-copy{white-space:normal}.toolbar{margin-top:14px}.nav{max-width:100%;width:100%;justify-content:space-between}.nav h2{min-width:0;flex:1;font-size:17px;margin:0 3px}.actions{width:100%}.actions .btn{flex:1;min-height:45px}.panel{border-radius:23px}.panel-heading{padding:13px}.group-summary{grid-template-columns:1fr}.group-summary>span:last-child{grid-column:auto}.table-scroll{max-height:70vh}.selection-toast{bottom:9px;left:9px;right:9px}.ambient{filter:blur(40px)}.hero::after{display:none}}
+    @media(prefers-reduced-transparency:reduce){.hero,.today-label,.nav,.panel,.selection-toast{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+    @media print {
+      @page{size:A3 landscape;margin:9mm} :root{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+      body{background:#fff!important}.atmosphere,.hero-ring,.hero-stars,.hero::before,.hero::after,.toolbar,.today-label,.selection-toast,.panel-titleline{display:none!important}
+      .page{max-width:none;padding:0;margin:0;animation:none}.hero{min-height:0;padding:0 0 8px;margin:0;border:0;border-radius:0;box-shadow:none;background:#fff!important;backdrop-filter:none;color:#243b57}.brand-icon{animation:none;box-shadow:none}
+      .eyebrow{color:#73839b}h1{color:#23364f;font-size:23px;text-shadow:none}.hero-subtitle{display:none}.print-month{display:block;margin-top:3px;font-size:15px;font-weight:700;color:#254568}
+      .panel{border:0;border-radius:0;box-shadow:none;animation:none;background:#fff;backdrop-filter:none}.panel::before{display:none}.panel-heading{padding:0 0 7px;background:#fff;border:0}
+      .group-summary{display:flex;flex-wrap:wrap;gap:12px;font-size:10px}.group-summary>span{padding:0;border:0;border-radius:0;background:#fff;box-shadow:none}.group-summary strong{display:inline;margin-right:4px;color:#2e5f98}
+      .table-scroll{overflow:visible;max-height:none;background:#fff;scroll-behavior:auto}table{min-width:0;font-size:10px}thead th{position:static;height:25px;font-size:10px}th.date-head{position:static;width:95px}
+      tbody td{height:22px;transition:none}td.date-cell{position:static;width:95px;font-size:10px}.shift-label{font-size:9px;padding:2px 1px;letter-spacing:0}
+      .holiday-inner{min-height:24px}.holiday-date{flex-basis:91px;font-size:10px}.holiday-content{padding-right:91px}.holiday-name{font-size:10px}tr.is-holiday>td.holiday-cell{height:25px}
+      .today-marker{display:none!important}tr.is-today>td{border-top:0!important;border-bottom:1px solid var(--line)!important;box-shadow:none!important}tr.is-today>td:first-child{border-left:0!important}tr.is-today>td:last-child{border-right:1px solid var(--line)!important}
+      tr.is-today>td:not(.has-ho):not(.date-cell):not(.holiday-cell){background:#fff!important}tr.is-today>td.has-ho{background:var(--person-color)!important;box-shadow:none!important}
+      tr.is-today td.date-cell{background:#f6faff!important;color:#536b87!important;font-weight:750!important;padding-left:12px!important;box-shadow:none!important;z-index:auto!important}
+      tr.is-today.is-weekend>td.date-cell{color:#c36f75!important;background:#fff7f8!important}tr.is-today.is-weekend>td:not(.date-cell){background:#f5f8fc!important}
+      tr.is-today.is-holiday>td.holiday-cell{background:linear-gradient(175deg,#fffaf0,#fff0d9)!important;color:#895a29!important;border:0!important;border-left:4px solid #e2b26c!important;border-right:1px solid #f0dfc8!important;border-bottom:1px solid #f0dfc8!important}
+      tr.is-today.is-holiday .holiday-date,tr.is-today.is-holiday .holiday-name{color:#895a29!important}
+    }
+    @keyframes entrance{from{opacity:0;transform:translateY(20px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes panelEnter{from{opacity:0;transform:translateY(17px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes iconFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}
+    @keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(88,173,255,.35)}55%{box-shadow:0 0 0 9px rgba(88,173,255,0)}}
+    @keyframes drift1{to{transform:translate3d(-32px,28px,0) scale(1.07)}}@keyframes drift2{to{transform:translate3d(40px,-25px,0) scale(1.04)}}@keyframes drift3{to{transform:translate3d(-20px,33px,0) scale(1.08)}}
+    @keyframes heroShimmer{0%,15%{left:-50%}38%,100%{left:160%}}
+    @keyframes starPulse{to{opacity:.32;transform:translateY(-3px)}}
+    @keyframes tableFade{from{opacity:.2;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"><div class="ambient one"></div><div class="ambient two"></div><div class="ambient three"></div></div>
+  <div class="page">
+    <header class="hero topbar">
+      <div class="hero-ring" aria-hidden="true"></div><div class="hero-stars" aria-hidden="true"></div>
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7.5 3.5V7M16.5 3.5V7M3 10h18"/><path d="M7.5 14.5h2M14.5 14.5h2M7.5 18h2"/></svg></div>
+        <div><div class="eyebrow">MĚSÍČNÍ ROZVRH</div><h1>Home Office</h1><p class="hero-subtitle">Helou maj kolík!</p><div class="print-month" id="printMonthTitle"></div></div>
+      </div>
+      <div class="today-label"><span class="today-signal"><span class="today-dot"></span></span><span class="today-copy"><span class="today-kicker">AKTUÁLNÍ DATUM</span><span id="todayLabel"></span></span><span id="todayNumber"></span></div>
+    </header>
+    <div class="toolbar">
+      <nav class="nav" aria-label="Přepínání měsíců">
+        <button class="btn btn-icon" type="button" id="prevMonth" aria-label="Předchozí měsíc">‹</button>
+        <h2 id="monthTitle" aria-live="polite"></h2>
+        <button class="btn btn-icon" type="button" id="nextMonth" aria-label="Následující měsíc">›</button>
+        <button class="btn btn-primary" type="button" id="showToday">Dnes</button>
+      </nav>
+      <div class="month-meta" id="monthSummary" aria-live="polite"></div>
+      <div class="actions"><button class="btn subtle" type="button" id="fullscreen">Celá obrazovka</button><button class="btn" type="button" id="print">Tisk / PDF ↗</button></div>
+    </div>
+    <main class="panel">
+      <div class="panel-heading">
+        <div class="panel-titleline"><span class="panel-title">PŘEHLED SKUPIN</span><span class="panel-live">Aktuální plán</span></div>
+        <div class="group-summary" aria-label="Rozdělení skupin a samostatného místa">
+          <span><strong>Skupina 1:</strong> Rosťa, Max, Matyáš, Kamil, Sofia, Nováček</span>
+          <span><strong>Skupina 2:</strong> Klárka, Terka, Kuba, Roman, Michal, Žanda, Vilma</span>
+          <span><strong>Bez sdílení místa:</strong> Alena</span>
+        </div>
+      </div>
+      <div class="table-scroll" id="tableScroll" role="region" aria-label="Tabulka měsíčního rozvrhu" tabindex="0">
+        <table aria-label="Měsíční rozvrh home office"><thead id="scheduleHead"></thead><tbody id="scheduleBody"></tbody></table>
+      </div>
+    </main>
+  </div>
+  <div class="selection-toast" id="selectionToast" aria-hidden="true" aria-live="polite"><span class="selection-icon" aria-hidden="true">✓</span><span><div class="selection-heading" id="selectionDate"></div><div class="selection-detail" id="selectionDetail"></div></span></div>
+  <script>
+    'use strict';
+
+    // ZMĚNA JMÉNA / BARVY / SKUPINY: upravte příslušnou položku níže.
+    // Skupina A má HO například 2., 5., 8. a 9. října 2026.
+    // Skupina B má HO například 1., 6., 7., 12. a 13. října 2026.
+    // Barevné dvojice sdílejí stejný odstín; Terka má původní tyrkysovou.
+    const PEOPLE = [
+      { id: 'klara',   name: 'Klára',    group: 'A', color: '#F2BACD' }, // Klára + Sofia: růžová
+      { id: 'rosta',   name: 'Rosťa',    group: 'B', color: '#9BCFF3' }, // Rosťa + Roman: azurová
+      { id: 'max',     name: 'Max',      group: 'B', color: '#C6CBDB' }, // Max + Žanda: kouřově modrá
+      { id: 'terka',   name: 'Terka',    group: 'A', color: '#70F5EB' }, // Terka: původní tyrkysová
+      { id: 'kuba',    name: 'Kuba',     group: 'A', color: '#C9E6A4' }, // Kuba + Kamil: pistáciová
+      { id: 'roman',   name: 'Roman',    group: 'A', color: '#9BCFF3' },
+      { id: 'matyas',  name: 'Matyáš*',  group: 'B', color: '#F6DE96' }, // Matyáš + Vilma: medová
+      { id: 'kamil',   name: 'Kamil',    group: 'B', color: '#C9E6A4' },
+      { id: 'michal',  name: 'Michal',   group: 'A', color: '#F3B9A8' }, // Michal + Nováček: korálová
+      { id: 'zanda',   name: 'Žanda',    group: 'A', color: '#C6CBDB' },
+      { id: 'sofia',   name: 'Sofia',    group: 'B', color: '#F2BACD' },
+      { id: 'vilma',   name: 'Vilma*',   group: 'A', color: '#F6DE96' },
+      { id: 'novacek', name: 'Nováček*', group: 'B', color: '#F3B9A8' }
+    ];
+
+    const MS_DAY = 86400000;
+    const WEEKDAY = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'];
+    const ANCHOR_UTC = Date.UTC(2026, 9, 1); // 1. 10. 2026 = skupina B, 2. den její dvojice.
+    const FIRST_MONTH = new Date(2026, 9, 1); // Před říjen 2026 nelze navigovat.
+    const holidayCache = new Map();
+    const pad2 = value => String(value).padStart(2, '0');
+    let viewDate = new Date(Math.max(new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime(), FIRST_MONTH.getTime()));
+    let todayKey = dateKey(new Date());
+    let userNavigated = false;
+    let selectedDateKey = null; // Pouze vizuální výběr, bez zásahu do rozpisu a ukládání.
+
+    const $ = id => document.getElementById(id);
+    function dateKey(date) {
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    }
+    function utcKey(date) {
+      return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}`;
+    }
+    function easterSunday(year) {
+      // Výpočet data Velikonoční neděle (gregoriánský kalendář).
+      const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+      const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(Date.UTC(year, month - 1, day));
+    }
+    function holidaysForYear(year) {
+      if (holidayCache.has(year)) return holidayCache.get(year);
+      const map = new Map();
+      const add = (month, day, name) => map.set(`${year}-${pad2(month)}-${pad2(day)}`, name);
+      add(1, 1, 'Nový rok / Den obnovy samostatného českého státu');
+      add(5, 1, 'Svátek práce');
+      add(5, 8, 'Den vítězství');
+      add(7, 5, 'Den slovanských věrozvěstů Cyrila a Metoděje');
+      add(7, 6, 'Den upálení mistra Jana Husa');
+      add(9, 28, 'Den české státnosti');
+      add(10, 28, 'Den vzniku samostatného československého státu');
+      add(11, 17, 'Den boje za svobodu a demokracii');
+      add(12, 24, 'Štědrý den');
+      add(12, 25, '1. svátek vánoční');
+      add(12, 26, '2. svátek vánoční');
+      const easter = easterSunday(year);
+      map.set(utcKey(new Date(easter.getTime() - 2 * MS_DAY)), 'Velký pátek');
+      map.set(utcKey(new Date(easter.getTime() + MS_DAY)), 'Velikonoční pondělí');
+      holidayCache.set(year, map);
+      return map;
+    }
+    function holidayName(key) {
+      return holidaysForYear(Number(key.slice(0, 4))).get(key) || '';
+    }
+    function isWorkingDayUTC(date) {
+      const weekday = date.getUTCDay();
+      return weekday !== 0 && weekday !== 6 && !holidayName(utcKey(date));
+    }
+    function isWorkingDay(date) {
+      const weekday = date.getDay();
+      return weekday !== 0 && weekday !== 6 && !holidayName(dateKey(date));
+    }
+    function businessDayIndex(date) {
+      // Počet pracovních dnů od 1. 10. 2026, včetně cílového dne;
+      // pro předchozí data je index záporný.
+      const target = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+      let index = 0;
+      if (target > ANCHOR_UTC) {
+        for (let t = ANCHOR_UTC + MS_DAY; t <= target; t += MS_DAY) {
+          if (isWorkingDayUTC(new Date(t))) index++;
+        }
+      } else if (target < ANCHOR_UTC) {
+        for (let t = ANCHOR_UTC - MS_DAY; t >= target; t -= MS_DAY) {
+          if (isWorkingDayUTC(new Date(t))) index--;
+        }
+      }
+      return index;
+    }
+    function plannedGroup(date) {
+      if (!isWorkingDay(date)) return null;
+      // Index 0 = B, 1 a 2 = A, 3 a 4 = B atd.; odpovídá říjnu 2026.
+      const pair = Math.floor((businessDayIndex(date) + 1) / 2);
+      return ((pair % 2) + 2) % 2 === 0 ? 'B' : 'A';
+    }
+    function updateTodayLabel() {
+      $('todayNumber').textContent = pad2(new Date().getDate());
+      $('todayLabel').textContent = new Intl.DateTimeFormat('cs-CZ', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      }).format(new Date());
+    }
+    function render({ centerToday = false } = {}) {
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+      const formattedMonth = new Intl.DateTimeFormat('cs-CZ', { month: 'long', year: 'numeric' }).format(viewDate);
+      $('monthTitle').textContent = formattedMonth.charAt(0).toLocaleUpperCase('cs-CZ') + formattedMonth.slice(1);
+      $('printMonthTitle').textContent = $('monthTitle').textContent;
+      $('prevMonth').disabled = viewDate.getTime() <= FIRST_MONTH.getTime();
+      $('prevMonth').title = $('prevMonth').disabled ? 'Rozvrh začíná říjnem 2026' : 'Předchozí měsíc';
+      updateTodayLabel();
+
+      $('scheduleHead').innerHTML = `<tr><th scope="col" class="date-head">Datum</th>${PEOPLE.map(person =>
+        `<th scope="col" class="person-head" style="--person-color:${person.color}" title="Skupina ${person.group}">${person.name}</th>`
+      ).join('')}</tr>`;
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      let workingDays = 0, holidayDays = 0;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const probe = new Date(year, month, day);
+        if (isWorkingDay(probe)) workingDays++;
+        if (holidayName(dateKey(probe))) holidayDays++;
+      }
+      $('monthSummary').textContent = `${daysInMonth} dní  /  ${workingDays} pracovních  /  ${holidayDays} svátků`;
+      const rows = [];
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const key = dateKey(date);
+        const holiday = holidayName(key);
+        const weekend = date.getDay() === 0 || date.getDay() === 6;
+        const today = key === todayKey;
+        const dateLabel = `${pad2(day)}.${pad2(month + 1)}.${year}`;
+        const flags = [weekend && 'is-weekend', holiday && 'is-holiday', today && 'is-today', key === selectedDateKey && 'is-selected'].filter(Boolean).join(' ');
+        const dayTitle = holiday || (weekend ? 'Víkend' : 'Pracovní den');
+        if (holiday) {
+          rows.push(`<tr class="${flags}" data-date="${key}" tabindex="0" aria-label="${dateLabel}: kliknutím označit nebo zrušit označení řádku" ${today ? 'aria-current="date"' : ''}>
+            <td class="holiday-cell" colspan="${PEOPLE.length + 1}" title="${holiday}"
+                aria-label="${dateLabel}, svátek: ${holiday}">
+              <div class="holiday-inner">
+                <span class="holiday-date">${dateLabel}<span class="weekday">${WEEKDAY[date.getDay()]}</span>${today ? '<span class="today-marker"><br><span class="today-small">DNES</span></span>' : ''}</span>
+                <span class="holiday-content"><span class="holiday-tag">SVÁTEK</span><strong class="holiday-name">${holiday}</strong></span>
+              </div>
+            </td>
+          </tr>`);
+          continue;
+        }
+        const groupToday = plannedGroup(date);
+        const cells = PEOPLE.map(person => {
+          const value = groupToday === person.group;
+          return `<td class="${value ? 'has-ho' : ''}" style="--person-color:${person.color}"
+              aria-label="${dateLabel}, ${person.name}: ${value ? 'HO' : 'bez HO'}"
+              title="${person.name}: ${value ? 'HO' : 'bez HO'}"><span class="shift-label">${value ? 'HO' : ''}</span></td>`;
+        }).join('');
+        rows.push(`<tr class="${flags}" data-date="${key}" tabindex="0" aria-label="${dateLabel}: kliknutím označit nebo zrušit označení řádku" ${today ? 'aria-current="date"' : ''}>
+          <td class="date-cell" title="${dayTitle}">${dateLabel}<span class="weekday">${WEEKDAY[date.getDay()]}</span>${today ? '<span class="today-marker"><br><span class="today-small">DNES</span></span>' : ''}</td>${cells}
+        </tr>`);
+      }
+      $('scheduleBody').innerHTML = rows.join('');
+      const tableElement = $('scheduleBody').closest('table');
+      if (tableElement) {
+        tableElement.classList.remove('table-animating');
+        requestAnimationFrame(() => tableElement.classList.add('table-animating'));
+        clearTimeout(render._animTimer);
+        render._animTimer = setTimeout(() => tableElement.classList.remove('table-animating'), 420);
+      }
+      if (centerToday) {
+        requestAnimationFrame(() => {
+          const row = $('scheduleBody').querySelector('tr.is-today');
+          const scroll = $('tableScroll');
+          if (row) scroll.scrollTop = Math.max(0,
+            row.offsetTop - scroll.clientHeight / 2 + row.offsetHeight / 2);
+        });
+      }
+    }
+    function updateSelectionToast() {
+      const toast = $('selectionToast');
+      if (!selectedDateKey) {
+        toast.classList.remove('is-visible');
+        toast.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      const parts = selectedDateKey.split('-').map(Number);
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      $('selectionDate').textContent = new Intl.DateTimeFormat('cs-CZ', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      }).format(date);
+      const holiday = holidayName(selectedDateKey);
+      const group = plannedGroup(date);
+      $('selectionDetail').textContent = holiday ? `Svátek · ${holiday}`
+        : group === 'A' ? 'Home office: Skupina 2' : group === 'B' ? 'Home office: Skupina 1' : 'Víkend · bez home office';
+      toast.classList.add('is-visible');
+      toast.setAttribute('aria-hidden', 'false');
+    }
+
+    // Kliknutí na libovolné políčko (včetně svátku) pouze označí celý řádek.
+    // Druhé kliknutí na stejný den označení zruší.
+    function toggleSelectedRow(row) {
+      const body = $('scheduleBody');
+      if (!row || row.parentElement !== body) return;
+      const nextKey = selectedDateKey === row.dataset.date ? null : row.dataset.date;
+      const previous = body.querySelector('tr.is-selected');
+      if (previous) previous.classList.remove('is-selected');
+      selectedDateKey = nextKey;
+      if (nextKey) row.classList.add('is-selected');
+      updateSelectionToast();
+    }
+    $('scheduleBody').addEventListener('click', event => {
+      toggleSelectedRow(event.target.closest('tr[data-date]'));
+    });
+    // Kliknutí mimo tabulku zruší jen ruční označení, ne automatické označení dneška.
+    document.addEventListener('click', event => {
+      if (!event.target.closest('#tableScroll table') && selectedDateKey !== null) {
+        const selected = $('scheduleBody').querySelector('tr.is-selected');
+        if (selected) selected.classList.remove('is-selected');
+        selectedDateKey = null;
+        updateSelectionToast();
+      }
+    });
+    $('scheduleBody').addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const row = event.target.closest('tr[data-date]');
+      if (!row || event.target !== row) return;
+      event.preventDefault();
+      toggleSelectedRow(row);
+    });
+    function changeMonth(offset) {
+      const target = new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1);
+      if (target < FIRST_MONTH) return;
+      viewDate = target;
+      selectedDateKey = null;
+      updateSelectionToast();
+      userNavigated = true;
+      $('tableScroll').scrollTop = 0;
+      render();
+    }
+    function goToToday() {
+      const now = new Date();
+      todayKey = dateKey(now);
+      viewDate = new Date(Math.max(new Date(now.getFullYear(), now.getMonth(), 1).getTime(), FIRST_MONTH.getTime()));
+      userNavigated = false;
+      selectedDateKey = null;
+      updateSelectionToast();
+      render({ centerToday: true });
+    }
+    $('prevMonth').addEventListener('click', () => changeMonth(-1));
+    $('nextMonth').addEventListener('click', () => changeMonth(1));
+    $('showToday').addEventListener('click', goToToday);
+    $('print').addEventListener('click', () => window.print());
+    $('fullscreen').addEventListener('click', async () => {
+      try {
+        if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+        else await document.exitFullscreen();
+      } catch (_) { /* Prohlížeč nemusí umožňovat fullscreen při otevření lokálního souboru. */ }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      $('fullscreen').textContent = document.fullscreenElement ? 'Zmenšit zobrazení' : 'Celá obrazovka';
+    });
+    // Interaktivní lom světla nad hlavním panelem; pouze jedna aktualizace za snímek.
+    const hero = document.querySelector('.hero');
+    if (window.matchMedia('(pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
+      let pending = 0;
+      hero.addEventListener('pointermove', event => {
+        if (pending) return;
+        const x = event.clientX, y = event.clientY;
+        pending = requestAnimationFrame(() => {
+          const rect = hero.getBoundingClientRect();
+          hero.style.setProperty('--spot-x', `${x - rect.left}px`);
+          hero.style.setProperty('--spot-y', `${y - rect.top}px`);
+          pending = 0;
+        });
+      });
+    }
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && selectedDateKey) {
+        const selected = $('scheduleBody').querySelector('tr.is-selected');
+        if (selected) selected.classList.remove('is-selected');
+        selectedDateKey = null;
+        updateSelectionToast();
+      }
+    });
+
+
+    // Při otevřené stránce se datum hlídá i po půlnoci.
+    setInterval(() => {
+      const now = new Date();
+      const nextTodayKey = dateKey(now);
+      if (nextTodayKey !== todayKey) {
+        todayKey = nextTodayKey;
+        if (!userNavigated) {
+          const oldMonth = viewDate.getTime();
+          viewDate = new Date(Math.max(new Date(now.getFullYear(), now.getMonth(), 1).getTime(), FIRST_MONTH.getTime()));
+          if (viewDate.getTime() !== oldMonth) { selectedDateKey = null; updateSelectionToast(); }
+        }
+        render({ centerToday: true });
+      }
+    }, 60000);
+
+    render({ centerToday: true });
+  </script>
+</body>
+</html>
